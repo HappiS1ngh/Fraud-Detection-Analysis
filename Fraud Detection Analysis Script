@@ -1,0 +1,51 @@
+# Fraud Detection Analysis Script
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the dataset
+file_path = "Fraud_Detection_Transactions_Corrected.csv"  # Update with your local path if needed
+transactions = pd.read_csv(file_path)
+
+# Display basic information about the dataset
+print("Dataset Overview:")
+print(transactions.head())
+print("\nSummary Statistics:")
+print(transactions.describe())
+
+# Benford's Law Analysis
+print("\nPerforming Benford's Law Analysis...")
+first_digits = transactions["Amount"].astype(str).str[0].astype(int)
+benford_distribution = [np.log10(1 + 1 / d) * len(first_digits) for d in range(1, 10)]
+actual_distribution = first_digits.value_counts().sort_index()
+
+# Plot Benford's Law
+plt.figure(figsize=(10, 6))
+plt.bar(range(1, 10), benford_distribution, alpha=0.7, label="Expected (Benford's Law)")
+plt.bar(range(1, 10), actual_distribution, alpha=0.7, label="Actual")
+plt.xticks(range(1, 10))
+plt.xlabel("First Digit")
+plt.ylabel("Frequency")
+plt.title("Benford's Law Analysis of Transaction Amounts")
+plt.legend()
+plt.tight_layout()
+plt.savefig("Benfords_Law_Analysis.png")
+plt.show()
+
+# Outlier Detection (Using Z-Score)
+print("\nPerforming Outlier Detection...")
+transactions["Z_Score"] = (transactions["Amount"] - transactions["Amount"].mean()) / transactions["Amount"].std()
+outliers = transactions[transactions["Z_Score"].abs() > 3]
+print(f"Number of Outliers Detected: {len(outliers)}")
+print("Outlier Transactions:")
+print(outliers)
+
+# Save Outliers to a CSV
+outliers.to_csv("Outlier_Transactions.csv", index=False)
+print("\nOutlier transactions saved to 'Outlier_Transactions.csv'.")
+
+# Summary
+print("\nFraud Detection Analysis Completed!")
+print("Results:")
+print("- Benford's Law Analysis: 'Benfords_Law_Analysis.png' created.")
+print("- Outlier Detection: 'Outlier_Transactions.csv' created.")
